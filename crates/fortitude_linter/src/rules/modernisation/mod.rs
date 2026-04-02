@@ -4,6 +4,7 @@ pub(crate) mod mpi;
 pub(crate) mod old_style_array_literal;
 pub mod out_of_line_attribute;
 pub(crate) mod relational_operators;
+pub(crate) mod save;
 
 #[cfg(test)]
 mod tests {
@@ -26,6 +27,7 @@ mod tests {
     #[test_case(Rule::IncludeStatement, Path::new("MOD031.f90"))]
     #[test_case(Rule::OldMPIModule, Path::new("MOD201.f90"))]
     #[test_case(Rule::OutOfLineAttribute, Path::new("MOD041.f90"))]
+    #[test_case(Rule::SuperfluousSave, Path::new("MOD051.f90"))]
     fn rules(rule_code: Rule, path: &Path) -> Result<()> {
         let snapshot = format!("{}_{}", rule_code.as_ref(), path.to_string_lossy());
         let diagnostics = test_path(
