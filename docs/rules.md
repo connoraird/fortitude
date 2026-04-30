@@ -76,6 +76,7 @@
 | MOD021 | [deprecated-relational-operator](rules/deprecated-relational-operator.md) | deprecated relational operator '{symbol}', prefer '{new_symbol}' instead | <span title='Rule is stable' style='opacity: 0.6'>✔️</span> <span title='Automatic fix available'>🛠️</span> <span title='Rule turned on by default'>▶️</span> |
 | MOD031 | [include-statement](rules/include-statement.md) | Include statement is deprecated, use modules instead | <span title='Rule is stable' style='opacity: 0.6'>✔️</span> <span title='Automatic fix not available' style='opacity: 0.1' aria-hidden='true'>🛠️</span> <span title='Rule not on by default'>⏸️</span> |
 | MOD041 | [out-of-line-attribute](rules/out-of-line-attribute.md) | Out of line '{attribute}' attribute for variable '{variable}' | <span title='Rule is in preview'>🧪</span> <span title='Automatic fix available'>🛠️</span> <span title='Rule turned on by default'>▶️</span> |
+| MOD051 | [superfluous-save](rules/superfluous-save.md) | save {} is superfluous at the module level | <span title='Rule is in preview'>🧪</span> <span title='Automatic fix available'>🛠️</span> <span title='Rule turned on by default'>▶️</span> |
 | MOD201 | [old-mpi-module](rules/old-mpi-module.md) | Use of mpi module discouraged, use mpi_f08 instead | <span title='Rule is in preview'>🧪</span> <span title='Automatic fix not available' style='opacity: 0.1' aria-hidden='true'>🛠️</span> <span title='Rule not on by default'>⏸️</span> |
 
 ### Style (S)
