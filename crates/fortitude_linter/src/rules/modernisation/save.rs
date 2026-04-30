@@ -107,10 +107,7 @@ impl AstRule for SuperfluousSave {
                     },
                     &save_statement
                 )
-                .with_fix(Fix::safe_edit(Edit::deletion(
-                    save_statement.start_textsize(),
-                    save_statement.end_textsize()
-                )))
+                .with_fix(Fix::safe_edit(save_statement.edit_delete(source)))
             ]
         }
     }
