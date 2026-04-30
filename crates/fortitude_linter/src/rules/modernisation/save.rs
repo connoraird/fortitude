@@ -1,4 +1,4 @@
-use ruff_diagnostics::{Diagnostic, Edit, Fix, FixAvailability, Violation};
+use ruff_diagnostics::{AlwaysFixableViolation, Diagnostic, Edit, Fix};
 use ruff_macros::{ViolationMetadata, derive_message_formats};
 
 use crate::{
@@ -38,16 +38,14 @@ pub(crate) struct SuperfluousSave {
     entity: &'static str,
 }
 
-impl Violation for SuperfluousSave {
-    const FIX_AVAILABILITY: FixAvailability = FixAvailability::Always;
-
+impl AlwaysFixableViolation for SuperfluousSave {
     #[derive_message_formats]
     fn message(&self) -> String {
         format!("save {} is superfluous at the module level", self.entity)
     }
 
-    fn fix_title(&self) -> Option<String> {
-        Some("Remove `save`".to_string())
+    fn fix_title(&self) -> String {
+        "Remove `save`".to_string()
     }
 }
 
