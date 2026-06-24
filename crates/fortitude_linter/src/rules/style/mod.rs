@@ -47,7 +47,7 @@ mod tests {
     #[test_case(Rule::IncorrectSpaceBeforeComment, Path::new("S102.f90"))]
     #[test_case(Rule::IncorrectSpaceAroundDoubleColon, Path::new("S103.f90"))]
     #[test_case(Rule::IncorrectSpaceBetweenBrackets, Path::new("S104.f90"))]
-    #[test_case(Rule::IncorrectIndent, Path::new("S105.f90"))]
+    #[test_case(Rule::InvalidIndentationMultiple, Path::new("S105.f90"))]
     #[test_case(Rule::SuperfluousImplicitNone, Path::new("S201.f90"))]
     #[test_case(Rule::MultipleModules, Path::new("S211.f90"))]
     #[test_case(Rule::ProgramWithModule, Path::new("S212.f90"))]
@@ -125,7 +125,7 @@ mod tests {
 
     #[test]
     fn incorrect_indent_width_2() -> Result<()> {
-        let rule_code = Rule::IncorrectIndent;
+        let rule_code = Rule::InvalidIndentationMultiple;
         let path = Path::new("S105.f90");
         let snapshot = format!(
             "{}_{}_indent_width_2",
