@@ -101,7 +101,7 @@ impl DoubleKeyword {
 /// - `check.keyword-whitespace.inout-with-space`
 /// - `check.keyword-whitespace.goto-with-space`
 #[derive(ViolationMetadata)]
-pub struct KeywordsMissingSpace {
+pub(crate) struct KeywordsMissingSpace {
     keywords: DoubleKeyword,
 }
 
@@ -194,7 +194,7 @@ impl AstRule for KeywordsMissingSpace {
 /// - `check.keyword-whitespace.inout-with-space`
 /// - `check.keyword-whitespace.goto-with-space`
 #[derive(ViolationMetadata)]
-pub struct KeywordHasWhitespace {
+pub(crate) struct KeywordHasWhitespace {
     keywords: DoubleKeyword,
 }
 
@@ -358,7 +358,7 @@ pub mod settings {
 /// ## Options
 /// - `check.incorrect-keyword-case.keyword-case`
 #[derive(ViolationMetadata)]
-pub struct IncorrectKeywordCase {
+pub(crate) struct IncorrectKeywordCase {
     actual: String,
     expected: String,
 }
