@@ -1,6 +1,6 @@
 use crate::ast::FortitudeNode;
 use crate::diagnostics::{AlwaysFixableViolation, Diagnostic, Fix};
-use crate::{AstRule, CheckContext};
+use crate::{AstRule, CheckContext, kind_ids};
 use fortitude_macros::ViolationMetadata;
 use ruff_macros::derive_message_formats;
 use tree_sitter::Node;
@@ -33,16 +33,19 @@ use tree_sitter::Node;
 /// ## References
 /// - [Doctor Fortran: "Doctor, it hurts when I do this!"](https://stevelionel.com/drfortran/2008/03/31/doctor-it-hurts-when-i-do-this/)
 #[derive(ViolationMetadata)]
-pub(crate) struct WholeArrayIndexing;
+pub(crate) struct WholeArrayIndexing {
+    name: String,
+}
 
 impl AlwaysFixableViolation for WholeArrayIndexing {
     #[derive_message_formats]
     fn message(&self) -> String {
-        "Avoid redundant whole-array indexing".to_string()
+        "Redundant whole-array indexing".to_string()
     }
 
     fn fix_title(&self) -> String {
-        "Remove redundant whole-array indexing".to_string()
+        let name = &self.name;
+        format!("Write as `{name}`")
     }
 }
 
@@ -57,12 +60,12 @@ fn has_only_whole_array_extents(node: &Node, src: &str) -> bool {
         return false;
     };
 
-    first.kind() == "extent_specifier"
-        && first.to_text(src).is_some_and(|text| text.trim() == ":")
-        && arguments.all(|argument| {
-            argument.kind() == "extent_specifier"
-                && argument.to_text(src).is_some_and(|text| text.trim() == ":")
-        })
+    let is_extent_specifier = |argument: &Node| {
+        argument.kind() == "extent_specifier"
+            && argument.to_text(src).is_some_and(|text| text.trim() == ":")
+    };
+
+    is_extent_specifier(&first) && arguments.all(|argument| is_extent_specifier(&argument))
 }
 
 fn is_assignment_lhs(node: &Node) -> bool {
@@ -88,10 +91,19 @@ impl AstRule for WholeArrayIndexing {
         let name = node.named_child(0)?.to_text(context.source_text())?;
         let fix = Fix::safe_edit(node.edit_replacement(context.source_file(), name.to_string()));
 
-        some_vec!(context.create_diagnostic(Self, node).with_fix(fix))
+        some_vec!(
+            context
+                .create_diagnostic(
+                    Self {
+                        name: name.to_string()
+                    },
+                    node
+                )
+                .with_fix(fix)
+        )
     }
 
-    fn entrypoints() -> Vec<&'static str> {
-        vec!["call_expression"]
+    fn entrypoints() -> Vec<u16> {
+        kind_ids!["call_expression"]
     }
 }

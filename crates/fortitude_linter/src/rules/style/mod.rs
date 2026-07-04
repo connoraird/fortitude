@@ -65,7 +65,7 @@ mod tests {
     #[test_case(Rule::BareDecimal, Path::new("S291.f90"))]
     #[test_case(Rule::SuperfluousWhileTrue, Path::new("S301.f90"))]
     #[test_case(Rule::KeywordReuse, Path::new("S311_keyword_reuse.f90"))]
-    #[test_case(Rule::WholeArrayIndexing, Path::new("S312.f90"))]
+    #[test_case(Rule::WholeArrayIndexing, Path::new("S321.f90"))]
     fn rules(rule_code: Rule, path: &Path) -> Result<()> {
         let snapshot = format!("{}_{}", rule_code.as_ref(), path.to_string_lossy());
         let diagnostics = test_path(
