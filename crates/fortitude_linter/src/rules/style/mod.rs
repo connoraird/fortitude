@@ -146,7 +146,7 @@ mod tests {
     #[test_case(Rule::BadQuoteString, Path::new("S241.f90"))]
     fn bad_quote_string_single_quotes(rule_code: Rule, path: &Path) -> Result<()> {
         let snapshot = format!(
-            "{}_{}_include_inout_goto",
+            "{}_{}_single_quotes",
             rule_code.as_ref(),
             path.to_string_lossy()
         );

@@ -22,7 +22,6 @@ use crate::Diagnostic;
 /// * Replace tabs with spaces for a consistent experience across terminals
 /// * Replace zero-width whitespaces
 /// * Print a simpler diff if only a single line has changed
-/// * Compute the diff from the `Edit` because diff calculation is expensive.
 pub(super) struct Diff<'a> {
     fix: &'a Fix,
     diagnostic_source: &'a SourceFile,
@@ -43,6 +42,10 @@ impl<'a> Diff<'a> {
     }
 }
 
+// Get slices slightly larger than the diff groups, helps to
+// minimise changes to the existing diffs
+const DIFF_CONTEXT_WINDOW: usize = 4;
+
 impl std::fmt::Display for Diff<'_> {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         let source_code = self.diagnostic_source.to_source_code();
@@ -54,28 +57,47 @@ impl std::fmt::Display for Diff<'_> {
         let mut output = String::with_capacity(input.len());
         let mut last_end = range.start();
 
-        let mut applied = 0;
+        let mut first = None;
         for edit in self.fix.edits() {
             if range.contains_range(edit.range()) {
+                first.get_or_insert(edit);
                 output.push_str(source_code.slice(TextRange::new(last_end, edit.start())));
                 output.push_str(edit.content().unwrap_or_default());
                 last_end = edit.end();
-                applied += 1;
             }
         }
 
         // Some edits were applied, so add diff.
-        if applied != 0 {
+        if let Some(first) = first {
+            let both_start = first.start();
+            let new_end = output.text_len();
+
             output.push_str(&source_text[usize::from(last_end)..usize::from(range.end())]);
 
-            let diff = TextDiff::from_lines(input, &output);
+            // Both slices start from the same point
+            let both_line_start = source_code
+                .line_index(both_start)
+                .saturating_sub(DIFF_CONTEXT_WINDOW);
+            let both_start = source_code.line_start(both_line_start);
+
+            let old_end = line_end_after(source_text, last_end);
+            let new_end = line_end_after(&output, new_end);
+
+            // Slices just around the changes
+            let old_slice = source_code.slice(TextRange::new(both_start, old_end));
+            let new_slice = &output[TextRange::new(both_start, new_end)];
+
+            let diff = TextDiff::from_lines(old_slice, new_slice);
 
             let grouped_ops = diff.grouped_ops(3);
 
             // Find the new line number with the largest number of digits to align all of the line
             // number separators.
+            let line_offset = both_line_start.to_zero_indexed();
             let last_op = grouped_ops.last().and_then(|group| group.last());
-            let largest_new = last_op.map(|op| op.new_range().end).unwrap_or_default();
+            let largest_new = last_op
+                .map(|op| op.new_range().end + line_offset)
+                .unwrap_or_default();
 
             let digit_with = OneIndexed::new(largest_new).unwrap_or_default().digits();
 
@@ -107,7 +129,9 @@ impl std::fmt::Display for Diff<'_> {
                         };
 
                         let line = Line {
-                            index: index.map(OneIndexed::from_zero_indexed),
+                            index: index.map(|i| {
+                                OneIndexed::from_zero_indexed(i).saturating_add(line_offset)
+                            }),
                             width: digit_with,
                         };
 
@@ -170,6 +194,21 @@ impl std::fmt::Display for Diff<'_> {
 
         Ok(())
     }
+}
+
+/// Returns the offset of the line ending of some context window after `offset`
+///
+/// Same guarantees as [`context_after`]
+fn line_end_after(source: &str, offset: TextSize) -> TextSize {
+    let bytes = &source.as_bytes()[usize::from(offset)..];
+
+    let line_end = memchr::memchr2_iter(b'\r', b'\n', bytes)
+        // Skip `\r` in `\r\n` sequences (only count the `\n`).
+        .filter(|&i| bytes[i] == b'\n' || !(bytes[i] == b'\r' && bytes.get(i + 1) == Some(&b'\n')))
+        .nth(DIFF_CONTEXT_WINDOW)
+        .map(|end| offset.to_u32().saturating_add(end.try_into().unwrap()) as usize)
+        .unwrap_or(source.len());
+    TextSize::try_from(line_end).expect("offset should be representable as u32")
 }
 
 struct Line {

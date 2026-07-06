@@ -57,6 +57,7 @@ lsp-types = { git = "https://github.com/astral-sh/lsp-types.git", rev = "3512a9f
     "proposed",
 ] }
 matchit = { version = "0.8.1" }
+memchr = { version = "2.7.1" }
 pathdiff = { version = "0.2.1" }
 path-absolutize = { version = "3.1.1", features = [
     "once_cell_cache",
@@ -79,7 +80,7 @@ rayon = "1.10.0"
 serde = { version = "1.0.210", features = ["derive"] }
 serde_json = { version = "1.0.113" }
 shellexpand = { version = "3.0.0" }
-similar = { version = "2.4.0", features = ["inline"] }
+similar = { version = "3.1.0", features = ["inline"] }
 similar-asserts = "1.6.0"
 strum = { version = "0.27.1", features = ["strum_macros"] }
 strum_macros = { version = "0.27.1" }

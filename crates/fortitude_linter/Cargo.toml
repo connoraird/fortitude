@@ -28,6 +28,7 @@ itertools = { workspace = true }
 lazy-regex = { workspace = true }
 lazy_static = { workspace = true }
 log = { workspace = true }
+memchr = { workspace = true }
 pathdiff = { workspace = true }
 path-absolutize = { workspace = true, features = [
     "once_cell_cache",

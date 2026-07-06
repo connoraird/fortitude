@@ -872,6 +872,7 @@ dependencies = [
  "lazy-regex",
  "lazy_static",
  "log",
+ "memchr",
  "path-absolutize",
  "pathdiff",
  "pretty_assertions",
@@ -886,7 +887,7 @@ dependencies = [
  "rustc-hash",
  "serde",
  "serde_json",
- "similar",
+ "similar 3.1.1",
  "strum",
  "strum_macros",
  "supports-hyperlinks",
@@ -1323,7 +1324,7 @@ dependencies = [
  "pest_derive",
  "regex",
  "serde",
- "similar",
+ "similar 2.7.0",
 ]
 
 [[package]]
@@ -2424,6 +2425,15 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "bbbb5d9659141646ae647b42fe094daf6c6192d1620870b449d9557f748b2daa"
 
 [[package]]
+name = "similar"
+version = "3.1.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "e6505efef05804732ed8a3f2d4f279429eb485bd69d5b0cc6b19cc02005cda16"
+dependencies = [
+ "bstr",
+]
+
+[[package]]
 name = "smallbitvec"
 version = "2.6.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -2842,7 +2852,7 @@ dependencies = [
  "serde",
  "serde_derive",
  "serde_json",
- "similar",
+ "similar 2.7.0",
  "smallbitvec",
  "streaming-iterator",
  "tiny_http",
