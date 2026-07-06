@@ -6,7 +6,6 @@ use ruff_macros::derive_message_formats;
 use ruff_source_file::UniversalNewlines;
 use ruff_text_size::{TextLen, TextRange, TextSize};
 use std::collections::HashSet;
-use tree_sitter::Node;
 use tree_sitter::Point;
 
 /// ## What does it do?
@@ -78,7 +77,7 @@ impl Violation for LineTooLong {
 }
 
 impl LineTooLong {
-    pub fn check(context: &CheckContext, root: &Node) -> Vec<Diagnostic> {
+    pub fn check(context: &CheckContext, comment_positions: &HashSet<Point>) -> Vec<Diagnostic> {
         let source = context.source_file().to_source_code();
         let settings = context.settings();
         let limit = settings.line_length;
@@ -86,21 +85,6 @@ impl LineTooLong {
         let mut violations = Vec::new();
 
         let tab_size = settings.invalid_tab.indent_width.as_usize();
-
-        let comment_positions: HashSet<Point> = context
-            .source_text()
-            .char_indices()
-            .filter(|(index, _)| {
-                if let Some(node) = root.named_descendant_for_byte_range(*index, *index) {
-                    matches!(node.kind(), "comment")
-                } else {
-                    false
-                }
-            })
-            .map(|(index, _)| root.named_descendant_for_byte_range(index, index))
-            .filter(|node| node.is_some())
-            .map(|node| node.unwrap().start_position())
-            .collect();
 
         for line in source.text().universal_newlines() {
             // The maximum width of the line is the number of bytes multiplied by the tab size (the

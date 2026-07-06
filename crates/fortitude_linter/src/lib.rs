@@ -59,6 +59,7 @@ use ruff_source_file::{SourceFile, SourceFileBuilder};
 use rustc_hash::FxHashMap;
 use source_kind::SourceKindDiff;
 use std::borrow::Cow;
+use std::collections::HashSet;
 use std::fs::File;
 use std::io::{self, Write};
 use std::iter::once;
@@ -304,9 +305,14 @@ pub(crate) fn check_path(
 
     // Perform AST analysis
     let root = tree.root_node();
+    let mut comment_positions = HashSet::new();
     for node in once(root).chain(root.descendants()) {
         if context.is_rule_enabled(Rule::SyntaxError) && node.is_missing() {
             violations.push(context.create_diagnostic(SyntaxError {}, node));
+        }
+
+        if node.kind_id() == kind!("comment") {
+            comment_positions.insert(node.start_position());
         }
 
         if node.is_named() && BEGIN_SCOPE_NODES.contains(&node.kind()) {
@@ -369,7 +375,7 @@ pub(crate) fn check_path(
 
     // ignore line length in comments requires AST
     if context.is_rule_enabled(Rule::LineTooLong) {
-        violations.extend(LineTooLong::check(&context, &root));
+        violations.extend(LineTooLong::check(&context, &comment_positions));
     }
 
     if context.is_rule_enabled(Rule::InvalidTab) {
