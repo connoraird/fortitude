@@ -357,19 +357,6 @@ impl AstRule for IncorrectSpaceBetweenBrackets {
 /// - `check.invalid-indentation-multiple.num-indents-for-submodule-contents`
 /// - `check.invalid-indentation-multiple.num-indents-for-line-continuation`
 /// - `check.invalid-indentation-multiple.num-indents-for-subroutine-contents`
-/// - `check.invalid-indentation-multiple.should-indent-associate-contents`
-/// - `check.invalid-indentation-multiple.should-indent-block-contents`
-/// - `check.invalid-indentation-multiple.should-indent-derived-type-contents`
-/// - `check.invalid-indentation-multiple.should-indent-do-contents`
-/// - `check.invalid-indentation-multiple.should-indent-function-contents`
-/// - `check.invalid-indentation-multiple.should-indent-if-contents`
-/// - `check.invalid-indentation-multiple.should-indent-interface-contents`
-/// - `check.invalid-indentation-multiple.should-indent-module-contents`
-/// - `check.invalid-indentation-multiple.should-indent-program-contents`
-/// - `check.invalid-indentation-multiple.should-indent-select-contents`
-/// - `check.invalid-indentation-multiple.should-indent-submodule-contents`
-/// - `check.invalid-indentation-multiple.should-indent-subroutine-contents`
-/// - `check.invalid-indentation-multiple.should-indent-after-line-continuation`
 #[derive(ViolationMetadata)]
 pub(crate) struct InvalidIndentationMultiple;
 
@@ -656,19 +643,6 @@ pub mod settings {
     #[derive(Debug, Clone, CacheKey)]
     pub struct InvalidIndentationMultipleSettings {
         pub construct_to_indent_map: HashMap<String, usize>,
-        pub should_indent_program_contents: bool,
-        pub should_indent_module_contents: bool,
-        pub should_indent_submodule_contents: bool,
-        pub should_indent_subroutine_contents: bool,
-        pub should_indent_function_contents: bool,
-        pub should_indent_derived_type_contents: bool,
-        pub should_indent_block_contents: bool,
-        pub should_indent_if_contents: bool,
-        pub should_indent_interface_contents: bool,
-        pub should_indent_select_contents: bool,
-        pub should_indent_do_contents: bool,
-        pub should_indent_associate_contents: bool,
-        pub should_indent_after_line_continuation: bool,
         pub num_indents_for_program_contents: usize,
         pub num_indents_for_module_contents: usize,
         pub num_indents_for_submodule_contents: usize,
@@ -689,19 +663,6 @@ pub mod settings {
             let construct_to_indent_map: HashMap<String, usize> = HashMap::new();
             let mut settings = Self {
                 construct_to_indent_map,
-                should_indent_program_contents: true,
-                should_indent_module_contents: true,
-                should_indent_submodule_contents: true,
-                should_indent_subroutine_contents: true,
-                should_indent_function_contents: true,
-                should_indent_derived_type_contents: true,
-                should_indent_block_contents: true,
-                should_indent_if_contents: true,
-                should_indent_interface_contents: true,
-                should_indent_select_contents: true,
-                should_indent_do_contents: true,
-                should_indent_associate_contents: true,
-                should_indent_after_line_continuation: true,
                 num_indents_for_program_contents: 1usize,
                 num_indents_for_module_contents: 1usize,
                 num_indents_for_submodule_contents: 1usize,
@@ -724,121 +685,69 @@ pub mod settings {
         pub fn populate_construct_to_indent_map(&mut self) -> Self {
             self.construct_to_indent_map.insert(
                 "program_statement".to_string(),
-                if self.should_indent_program_contents {
-                    self.num_indents_for_program_contents
-                } else {
-                    0usize
-                },
+                self.num_indents_for_program_contents,
             );
 
             self.construct_to_indent_map.insert(
                 "module_statement".to_string(),
-                if self.should_indent_module_contents {
-                    self.num_indents_for_module_contents
-                } else {
-                    0usize
-                },
+                self.num_indents_for_module_contents,
             );
 
             self.construct_to_indent_map.insert(
                 "submodule_statement".to_string(),
-                if self.should_indent_submodule_contents {
-                    self.num_indents_for_submodule_contents
-                } else {
-                    0usize
-                },
+                self.num_indents_for_submodule_contents,
             );
 
             self.construct_to_indent_map.insert(
                 "subroutine_statement".to_string(),
-                if self.should_indent_subroutine_contents {
-                    self.num_indents_for_subroutine_contents
-                } else {
-                    0usize
-                },
+                self.num_indents_for_subroutine_contents,
             );
 
-            let function_indent = if self.should_indent_function_contents {
-                self.num_indents_for_function_contents
-            } else {
-                0usize
-            };
-            self.construct_to_indent_map
-                .insert("function_statement".to_string(), function_indent);
-            self.construct_to_indent_map
-                .insert("function".to_string(), function_indent);
+            self.construct_to_indent_map.insert(
+                "function_statement".to_string(),
+                self.num_indents_for_function_contents,
+            );
+            self.construct_to_indent_map.insert(
+                "function".to_string(),
+                self.num_indents_for_function_contents,
+            );
 
             self.construct_to_indent_map.insert(
                 "derived_type_statement".to_string(),
-                if self.should_indent_derived_type_contents {
-                    self.num_indents_for_derived_type_contents
-                } else {
-                    0usize
-                },
+                self.num_indents_for_derived_type_contents,
             );
 
             self.construct_to_indent_map.insert(
                 "block_construct".to_string(),
-                if self.should_indent_block_contents {
-                    self.num_indents_for_block_contents
-                } else {
-                    0usize
-                },
+                self.num_indents_for_block_contents,
             );
 
-            self.construct_to_indent_map.insert(
-                "if_statement".to_string(),
-                if self.should_indent_if_contents {
-                    self.num_indents_for_if_contents
-                } else {
-                    0usize
-                },
-            );
+            self.construct_to_indent_map
+                .insert("if_statement".to_string(), self.num_indents_for_if_contents);
 
             self.construct_to_indent_map.insert(
                 "interface_statement".to_string(),
-                if self.should_indent_interface_contents {
-                    self.num_indents_for_interface_contents
-                } else {
-                    0usize
-                },
+                self.num_indents_for_interface_contents,
             );
 
             self.construct_to_indent_map.insert(
                 "select_case_statement".to_string(),
-                if self.should_indent_select_contents {
-                    self.num_indents_for_select_contents
-                } else {
-                    0usize
-                },
+                self.num_indents_for_select_contents,
             );
 
-            let do_indent = if self.should_indent_do_contents {
-                self.num_indents_for_do_contents
-            } else {
-                0usize
-            };
             self.construct_to_indent_map
-                .insert("do_loop".to_string(), do_indent);
+                .insert("do_loop".to_string(), self.num_indents_for_do_contents);
             self.construct_to_indent_map
-                .insert("do_statement".to_string(), do_indent);
+                .insert("do_statement".to_string(), self.num_indents_for_do_contents);
 
             self.construct_to_indent_map.insert(
                 "associate_statement".to_string(),
-                if self.should_indent_associate_contents {
-                    self.num_indents_for_associate_contents
-                } else {
-                    0usize
-                },
+                self.num_indents_for_associate_contents,
             );
 
             self.construct_to_indent_map.insert(
                 "line_continuation".to_string(),
-                if self.should_indent_after_line_continuation {
-                    self.num_indents_for_line_continuation
-                } else {
-                    0usize
-                },
+                self.num_indents_for_line_continuation,
             );
 
             self.clone()
@@ -851,19 +760,6 @@ pub mod settings {
                 formatter = f,
                 namespace = "check.invalid-indentation-multiple",
                 fields = [
-                    self.should_indent_program_contents,
-                    self.should_indent_module_contents,
-                    self.should_indent_submodule_contents,
-                    self.should_indent_subroutine_contents,
-                    self.should_indent_function_contents,
-                    self.should_indent_derived_type_contents,
-                    self.should_indent_block_contents,
-                    self.should_indent_if_contents,
-                    self.should_indent_interface_contents,
-                    self.should_indent_select_contents,
-                    self.should_indent_do_contents,
-                    self.should_indent_associate_contents,
-                    self.should_indent_after_line_continuation,
                     self.num_indents_for_program_contents,
                     self.num_indents_for_module_contents,
                     self.num_indents_for_submodule_contents,
@@ -892,165 +788,122 @@ mod tests {
     use std::process::Command;
     use tempfile::TempDir;
 
+    #[test_case::test_case(1, "!> My program\nprogram test\n    implicit none\nend program test")]
     #[test_case::test_case(
-        true,
-        1,
-        "!> My program\nprogram test\n    implicit none\nend program test"
-    )]
-    #[test_case::test_case(
-        true,
         2,
         "!> My program\nprogram test\n        implicit none\nend program test"
     )]
-    #[test_case::test_case(
-        false,
-        3,
-        "!> My program\nprogram test\nimplicit none\nend program test"
-    )]
-    fn test_s105_program_indentation(
-        should_indent: bool,
-        num_indents: i8,
-        fixed_snippet: &str,
-    ) -> Result<()> {
+    #[test_case::test_case(0, "!> My program\nprogram test\nimplicit none\nend program test")]
+    fn test_s105_program_indentation(num_indents: i8, fixed_snippet: &str) -> Result<()> {
         let snippet = "!> My program\nprogram test\nimplicit none\nend program test";
         let toml_contents = format!(
             r#"
             [check.invalid-indentation-multiple]
-            should-indent-program-contents = {}
             num-indents-for-program-contents = {}
             "#,
-            should_indent, num_indents,
+            num_indents,
         );
 
         verify_s105_fixes(snippet, fixed_snippet, &toml_contents)
     }
 
     #[test_case::test_case(
-        true,
         1,
         "!> My module\nmodule test\n    implicit none\ncontains\nend module test"
     )]
     #[test_case::test_case(
-        true,
         2,
         "!> My module\nmodule test\n        implicit none\ncontains\nend module test"
     )]
     #[test_case::test_case(
-        false,
-        3,
+        0,
         "!> My module\nmodule test\nimplicit none\ncontains\nend module test"
     )]
-    fn test_s105_module_indentation(
-        should_indent: bool,
-        num_indents: i8,
-        fixed_snippet: &str,
-    ) -> Result<()> {
+    fn test_s105_module_indentation(num_indents: i8, fixed_snippet: &str) -> Result<()> {
         let snippet = "!> My module\nmodule test\nimplicit none\ncontains\nend module test";
         let toml_contents = format!(
             r#"
             [check.invalid-indentation-multiple]
-            should-indent-module-contents = {}
             num-indents-for-module-contents = {}
             "#,
-            should_indent, num_indents,
+            num_indents,
         );
 
         verify_s105_fixes(snippet, fixed_snippet, &toml_contents)
     }
 
     #[test_case::test_case(
-        true,
         1,
         "!> My submodule\nsubmodule (mmod) test\n    implicit none\ncontains\nend submodule test"
     )]
     #[test_case::test_case(
-        true,
         2,
         "!> My submodule\nsubmodule (mmod) test\n        implicit none\ncontains\nend submodule test"
     )]
     #[test_case::test_case(
-        false,
-        3,
+        0,
         "!> My submodule\nsubmodule (mmod) test\nimplicit none\ncontains\nend submodule test"
     )]
-    fn test_s105_submodule_indentation(
-        should_indent: bool,
-        num_indents: i8,
-        fixed_snippet: &str,
-    ) -> Result<()> {
+    fn test_s105_submodule_indentation(num_indents: i8, fixed_snippet: &str) -> Result<()> {
         let snippet =
             "!> My submodule\nsubmodule (mmod) test\nimplicit none\ncontains\nend submodule test";
         let toml_contents = format!(
             r#"
             [check.invalid-indentation-multiple]
-            should-indent-submodule-contents = {}
             num-indents-for-submodule-contents = {}
             "#,
-            should_indent, num_indents,
+            num_indents,
         );
 
         verify_s105_fixes(snippet, fixed_snippet, &toml_contents)
     }
 
     #[test_case::test_case(
-        true,
         1,
         "!> My subroutine\nsubroutine test\n    implicit none\nend subroutine test"
     )]
     #[test_case::test_case(
-        true,
         2,
         "!> My subroutine\nsubroutine test\n        implicit none\nend subroutine test"
     )]
     #[test_case::test_case(
-        false,
-        3,
+        0,
         "!> My subroutine\nsubroutine test\nimplicit none\nend subroutine test"
     )]
-    fn test_s105_subroutine_indentation(
-        should_indent: bool,
-        num_indents: i8,
-        fixed_snippet: &str,
-    ) -> Result<()> {
+    fn test_s105_subroutine_indentation(num_indents: i8, fixed_snippet: &str) -> Result<()> {
         let snippet = "!> My subroutine\nsubroutine test\nimplicit none\nend subroutine test";
         let toml_contents = format!(
             r#"
             [check.invalid-indentation-multiple]
-            should-indent-subroutine-contents = {}
             num-indents-for-subroutine-contents = {}
             "#,
-            should_indent, num_indents,
+            num_indents,
         );
 
         verify_s105_fixes(snippet, fixed_snippet, &toml_contents)
     }
 
     #[test_case::test_case(
-        true,
         1,
         "!> My function\nfunction test result(output)\ninteger :: output\nend function test",
         "!> My function\nfunction test result(output)\n    integer :: output\nend function test"
     )]
     #[test_case::test_case(
-        true,
         2,
         "!> My function\nfunction test result(output)\ninteger :: output\nend function test",
         "!> My function\nfunction test result(output)\n        integer :: output\nend function test"
     )]
     #[test_case::test_case(
-        false,
-        3,
+        0,
         "!> My function\nfunction test result(output)\ninteger :: output\nend function test",
         "!> My function\nfunction test result(output)\ninteger :: output\nend function test"
     )]
     #[test_case::test_case(
-        true,
         1,
         "!> My function\ninteger function test\ntest = 3\nend function test",
         "!> My function\ninteger function test\n    test = 3\nend function test"
     )]
     fn test_s105_function_indentation(
-        should_indent: bool,
         num_indents: i8,
         snippet: &str,
         fixed_snippet: &str,
@@ -1058,10 +911,55 @@ mod tests {
         let toml_contents = format!(
             r#"
             [check.invalid-indentation-multiple]
-            should-indent-function-contents = {}
             num-indents-for-function-contents = {}
             "#,
-            should_indent, num_indents,
+            num_indents,
+        );
+
+        verify_s105_fixes(snippet, fixed_snippet, &toml_contents)
+    }
+
+    #[test_case::test_case(
+        1,
+        r#"module mmod
+    type :: mtype
+        integer :: i
+    contains
+        procedure :: mproc
+    end type mtype
+contains
+end module mmod"#
+    )]
+    #[test_case::test_case(
+        2,
+        r#"module mmod
+    type :: mtype
+            integer :: i
+    contains
+            procedure :: mproc
+    end type mtype
+contains
+end module mmod"#
+    )]
+    #[test_case::test_case(
+        0,
+        r#"module mmod
+    type :: mtype
+    integer :: i
+    contains
+    procedure :: mproc
+    end type mtype
+contains
+end module mmod"#
+    )]
+    fn test_s105_derived_type_indentation(num_indents: i8, fixed_snippet: &str) -> Result<()> {
+        let snippet = "module mmod\ntype :: mtype\ninteger :: i\ncontains\nprocedure :: mproc\n end type mtype\ncontains\nend module mmod";
+        let toml_contents = format!(
+            r#"
+            [check.invalid-indentation-multiple]
+            num-indents-for-derived-type-contents = {}
+            "#,
+            num_indents,
         );
 
         verify_s105_fixes(snippet, fixed_snippet, &toml_contents)

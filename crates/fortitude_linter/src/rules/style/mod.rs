@@ -158,8 +158,8 @@ mod tests {
 
         let mut invalid_indentation_multiple_settings =
             whitespace::settings::InvalidIndentationMultipleSettings {
-                should_indent_associate_contents: false,
-                should_indent_if_contents: false,
+                num_indents_for_associate_contents: 0,
+                num_indents_for_if_contents: 0,
                 num_indents_for_subroutine_contents: 2,
                 ..Default::default()
             };
