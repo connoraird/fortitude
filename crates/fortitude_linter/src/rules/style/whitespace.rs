@@ -883,3 +883,209 @@ pub mod settings {
         }
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use anyhow::Result;
+    use assert_cmd::prelude::CommandCargoExt;
+    use std::fs;
+    use std::process::Command;
+    use tempfile::TempDir;
+
+    #[test_case::test_case(
+        true,
+        1,
+        "!> My program\nprogram test\n    implicit none\nend program test"
+    )]
+    #[test_case::test_case(
+        true,
+        2,
+        "!> My program\nprogram test\n        implicit none\nend program test"
+    )]
+    #[test_case::test_case(
+        false,
+        3,
+        "!> My program\nprogram test\nimplicit none\nend program test"
+    )]
+    fn test_s105_program_indentation(
+        should_indent: bool,
+        num_indents: i8,
+        fixed_snippet: &str,
+    ) -> Result<()> {
+        let snippet = "!> My program\nprogram test\nimplicit none\nend program test";
+        let toml_contents = format!(
+            r#"
+            [check.invalid-indentation-multiple]
+            should-indent-program-contents = {}
+            num-indents-for-program-contents = {}
+            "#,
+            should_indent, num_indents,
+        );
+
+        verify_s105_fixes(snippet, fixed_snippet, &toml_contents)
+    }
+
+    #[test_case::test_case(
+        true,
+        1,
+        "!> My module\nmodule test\n    implicit none\ncontains\nend module test"
+    )]
+    #[test_case::test_case(
+        true,
+        2,
+        "!> My module\nmodule test\n        implicit none\ncontains\nend module test"
+    )]
+    #[test_case::test_case(
+        false,
+        3,
+        "!> My module\nmodule test\nimplicit none\ncontains\nend module test"
+    )]
+    fn test_s105_module_indentation(
+        should_indent: bool,
+        num_indents: i8,
+        fixed_snippet: &str,
+    ) -> Result<()> {
+        let snippet = "!> My module\nmodule test\nimplicit none\ncontains\nend module test";
+        let toml_contents = format!(
+            r#"
+            [check.invalid-indentation-multiple]
+            should-indent-module-contents = {}
+            num-indents-for-module-contents = {}
+            "#,
+            should_indent, num_indents,
+        );
+
+        verify_s105_fixes(snippet, fixed_snippet, &toml_contents)
+    }
+
+    #[test_case::test_case(
+        true,
+        1,
+        "!> My submodule\nsubmodule (mmod) test\n    implicit none\ncontains\nend submodule test"
+    )]
+    #[test_case::test_case(
+        true,
+        2,
+        "!> My submodule\nsubmodule (mmod) test\n        implicit none\ncontains\nend submodule test"
+    )]
+    #[test_case::test_case(
+        false,
+        3,
+        "!> My submodule\nsubmodule (mmod) test\nimplicit none\ncontains\nend submodule test"
+    )]
+    fn test_s105_submodule_indentation(
+        should_indent: bool,
+        num_indents: i8,
+        fixed_snippet: &str,
+    ) -> Result<()> {
+        let snippet =
+            "!> My submodule\nsubmodule (mmod) test\nimplicit none\ncontains\nend submodule test";
+        let toml_contents = format!(
+            r#"
+            [check.invalid-indentation-multiple]
+            should-indent-submodule-contents = {}
+            num-indents-for-submodule-contents = {}
+            "#,
+            should_indent, num_indents,
+        );
+
+        verify_s105_fixes(snippet, fixed_snippet, &toml_contents)
+    }
+
+    #[test_case::test_case(
+        true,
+        1,
+        "!> My subroutine\nsubroutine test\n    implicit none\nend subroutine test"
+    )]
+    #[test_case::test_case(
+        true,
+        2,
+        "!> My subroutine\nsubroutine test\n        implicit none\nend subroutine test"
+    )]
+    #[test_case::test_case(
+        false,
+        3,
+        "!> My subroutine\nsubroutine test\nimplicit none\nend subroutine test"
+    )]
+    fn test_s105_subroutine_indentation(
+        should_indent: bool,
+        num_indents: i8,
+        fixed_snippet: &str,
+    ) -> Result<()> {
+        let snippet = "!> My subroutine\nsubroutine test\nimplicit none\nend subroutine test";
+        let toml_contents = format!(
+            r#"
+            [check.invalid-indentation-multiple]
+            should-indent-subroutine-contents = {}
+            num-indents-for-subroutine-contents = {}
+            "#,
+            should_indent, num_indents,
+        );
+
+        verify_s105_fixes(snippet, fixed_snippet, &toml_contents)
+    }
+
+    #[test_case::test_case(
+        true,
+        1,
+        "!> My function\nfunction test result(output)\ninteger :: output\nend function test",
+        "!> My function\nfunction test result(output)\n    integer :: output\nend function test"
+    )]
+    #[test_case::test_case(
+        true,
+        2,
+        "!> My function\nfunction test result(output)\ninteger :: output\nend function test",
+        "!> My function\nfunction test result(output)\n        integer :: output\nend function test"
+    )]
+    #[test_case::test_case(
+        false,
+        3,
+        "!> My function\nfunction test result(output)\ninteger :: output\nend function test",
+        "!> My function\nfunction test result(output)\ninteger :: output\nend function test"
+    )]
+    #[test_case::test_case(
+        true,
+        1,
+        "!> My function\ninteger function test\ntest = 3\nend function test",
+        "!> My function\ninteger function test\n    test = 3\nend function test"
+    )]
+    fn test_s105_function_indentation(
+        should_indent: bool,
+        num_indents: i8,
+        snippet: &str,
+        fixed_snippet: &str,
+    ) -> Result<()> {
+        let toml_contents = format!(
+            r#"
+            [check.invalid-indentation-multiple]
+            should-indent-function-contents = {}
+            num-indents-for-function-contents = {}
+            "#,
+            should_indent, num_indents,
+        );
+
+        verify_s105_fixes(snippet, fixed_snippet, &toml_contents)
+    }
+
+    fn verify_s105_fixes(snippet: &str, fixed_snippet: &str, toml_contents: &str) -> Result<()> {
+        let temp_dir = TempDir::new()?;
+        let fixed_src_path = temp_dir.path().join("S105-fixed.f90");
+        let toml_path = temp_dir.path().join("fortitude.toml");
+        fs::write(&fixed_src_path, snippet)?;
+        fs::write(&toml_path, toml_contents)?;
+
+        Command::cargo_bin("fortitude")?
+            .arg("check")
+            .arg("--config-file")
+            .arg(toml_path.as_os_str())
+            .arg("--fix")
+            .arg("--preview")
+            .arg("--select=S105")
+            .arg(fixed_src_path.as_os_str())
+            .status()?;
+        let fixed: String = String::from_utf8(fs::read(fixed_src_path.as_os_str())?)?;
+        assert_eq!(fixed_snippet, fixed);
+
+        Ok(())
+    }
+}
