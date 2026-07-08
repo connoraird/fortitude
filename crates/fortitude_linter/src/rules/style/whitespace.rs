@@ -788,7 +788,6 @@ mod tests {
     use std::process::Command;
     use tempfile::TempDir;
 
-    #[test_case::test_case(1, "!> My program\nprogram test\n    implicit none\nend program test")]
     #[test_case::test_case(
         2,
         "!> My program\nprogram test\n        implicit none\nend program test"
@@ -807,10 +806,6 @@ mod tests {
         verify_s105_fixes(snippet, fixed_snippet, &toml_contents)
     }
 
-    #[test_case::test_case(
-        1,
-        "!> My module\nmodule test\n    implicit none\ncontains\nend module test"
-    )]
     #[test_case::test_case(
         2,
         "!> My module\nmodule test\n        implicit none\ncontains\nend module test"
@@ -832,10 +827,6 @@ mod tests {
         verify_s105_fixes(snippet, fixed_snippet, &toml_contents)
     }
 
-    #[test_case::test_case(
-        1,
-        "!> My submodule\nsubmodule (mmod) test\n    implicit none\ncontains\nend submodule test"
-    )]
     #[test_case::test_case(
         2,
         "!> My submodule\nsubmodule (mmod) test\n        implicit none\ncontains\nend submodule test"
@@ -859,10 +850,6 @@ mod tests {
     }
 
     #[test_case::test_case(
-        1,
-        "!> My subroutine\nsubroutine test\n    implicit none\nend subroutine test"
-    )]
-    #[test_case::test_case(
         2,
         "!> My subroutine\nsubroutine test\n        implicit none\nend subroutine test"
     )]
@@ -884,11 +871,6 @@ mod tests {
     }
 
     #[test_case::test_case(
-        1,
-        "!> My function\nfunction test result(output)\ninteger :: output\nend function test",
-        "!> My function\nfunction test result(output)\n    integer :: output\nend function test"
-    )]
-    #[test_case::test_case(
         2,
         "!> My function\nfunction test result(output)\ninteger :: output\nend function test",
         "!> My function\nfunction test result(output)\n        integer :: output\nend function test"
@@ -899,9 +881,50 @@ mod tests {
         "!> My function\nfunction test result(output)\ninteger :: output\nend function test"
     )]
     #[test_case::test_case(
-        1,
+        3,
         "!> My function\ninteger function test\ntest = 3\nend function test",
-        "!> My function\ninteger function test\n    test = 3\nend function test"
+        "!> My function\ninteger function test\n            test = 3\nend function test"
+    )]
+    #[test_case::test_case(
+        0,
+        "!> My function\ninteger function test\ntest = 3\nend function test",
+        "!> My function\ninteger function test\ntest = 3\nend function test"
+    )]
+    #[test_case::test_case(  // Interfaced function with result
+        2,
+        r#"
+submodule (mmod) msubmodule
+contains
+module function interfaced_function(i) result(x)
+integer, intent(in) :: i
+x = i
+end function interfaced_function
+end submodule msubmodule"#,
+        r#"
+submodule (mmod) msubmodule
+contains
+    module function interfaced_function(i) result(x)
+            integer, intent(in) :: i
+            x = i
+    end function interfaced_function
+end submodule msubmodule"#
+    )]
+    #[test_case::test_case(  // Interfaced function with return type
+        3,
+        r#"
+submodule (mmod) msubmodule
+contains
+integer module function interfaced_function(i)
+interfaced_function = i
+end function interfaced_function
+end submodule msubmodule"#,
+        r#"
+submodule (mmod) msubmodule
+contains
+    integer module function interfaced_function(i)
+                interfaced_function = i
+    end function interfaced_function
+end submodule msubmodule"#
     )]
     fn test_s105_function_indentation(
         num_indents: i8,
@@ -920,19 +943,9 @@ mod tests {
     }
 
     #[test_case::test_case(
-        1,
-        r#"module mmod
-    type :: mtype
-        integer :: i
-    contains
-        procedure :: mproc
-    end type mtype
-contains
-end module mmod"#
-    )]
-    #[test_case::test_case(
         2,
-        r#"module mmod
+        r#"
+module mmod
     type :: mtype
             integer :: i
     contains
@@ -943,7 +956,8 @@ end module mmod"#
     )]
     #[test_case::test_case(
         0,
-        r#"module mmod
+        r#"
+module mmod
     type :: mtype
     integer :: i
     contains
@@ -953,11 +967,395 @@ contains
 end module mmod"#
     )]
     fn test_s105_derived_type_indentation(num_indents: i8, fixed_snippet: &str) -> Result<()> {
-        let snippet = "module mmod\ntype :: mtype\ninteger :: i\ncontains\nprocedure :: mproc\n end type mtype\ncontains\nend module mmod";
+        let snippet = r#"
+module mmod
+type :: mtype
+integer :: i
+contains
+procedure :: mproc
+end type mtype
+contains
+end module mmod"#;
         let toml_contents = format!(
             r#"
             [check.invalid-indentation-multiple]
             num-indents-for-derived-type-contents = {}
+            "#,
+            num_indents,
+        );
+
+        verify_s105_fixes(snippet, fixed_snippet, &toml_contents)
+    }
+
+    #[test_case::test_case(
+        2,
+        r#"
+program mprog
+    block
+            real :: x = 3.142
+            print*, x
+            y = x
+            inner: block
+                    real :: y = 12.1
+                    print*, y
+            end block inner
+    end block
+end program mprog"#
+    )]
+    #[test_case::test_case(
+        0,
+        r#"
+program mprog
+    block
+    real :: x = 3.142
+    print*, x
+    y = x
+    inner: block
+    real :: y = 12.1
+    print*, y
+    end block inner
+    end block
+end program mprog"#
+    )]
+    fn test_s105_block_indentation(num_indents: i8, fixed_snippet: &str) -> Result<()> {
+        let snippet = r#"
+program mprog
+block
+real :: x = 3.142
+print*, x
+y = x
+inner: block
+real :: y = 12.1
+print*, y
+end block inner
+end block
+end program mprog"#;
+        let toml_contents = format!(
+            r#"
+            [check.invalid-indentation-multiple]
+            num-indents-for-block-contents = {}
+            "#,
+            num_indents,
+        );
+
+        verify_s105_fixes(snippet, fixed_snippet, &toml_contents)
+    }
+
+    #[test_case::test_case(  // All types of if with zero indent
+        3,
+        r#"
+subroutine msub()
+    integer :: i
+    i = i + 1
+    ! inline if
+    if (i == 1) i = 2
+    ! Semicolons
+    if (i == 2) then
+                i = 3
+    end if
+    if (i == 4) then
+                i = 2
+    end if
+    ! Named if block
+    named_if: if (i == 1) then
+                i = i + 1
+    end if
+end subroutine msub"#
+    )]
+    #[test_case::test_case(
+        0,
+        r#"
+subroutine msub()
+    integer :: i
+    i = i + 1
+    ! inline if
+    if (i == 1) i = 2
+    ! Semicolons
+    if (i == 2) then
+    i = 3
+    end if
+    if (i == 4) then
+    i = 2
+    end if
+    ! Named if block
+    named_if: if (i == 1) then
+    i = i + 1
+    end if
+end subroutine msub"#
+    )]
+    fn test_s105_if_indentation(num_indents: i8, fixed_snippet: &str) -> Result<()> {
+        let snippet = r#"
+subroutine msub()
+integer :: i
+i = i + 1
+! inline if
+if (i == 1) i = 2
+! Semicolons
+if (i == 2) then; i = 3; end if;
+if (i == 4) then
+i = 2
+end if
+! Named if block
+named_if: if (i == 1) then
+i = i + 1
+end if
+end subroutine msub"#;
+        let toml_contents = format!(
+            r#"
+            [check.invalid-indentation-multiple]
+            num-indents-for-if-contents = {}
+            "#,
+            num_indents,
+        );
+
+        verify_s105_fixes(snippet, fixed_snippet, &toml_contents)
+    }
+
+    #[test_case::test_case(
+        4,
+        r#"
+module mmod
+    interface
+                    module function interfaced_function(i) result(x)
+                        integer, intent(in) :: i
+                    end function interfaced_function
+    end interface
+    interface minterface
+                    module procedure minterface_i,minterface_r
+    end interface minterface
+end module mmod"#
+    )]
+    #[test_case::test_case(
+        0,
+        r#"
+module mmod
+    interface
+    module function interfaced_function(i) result(x)
+        integer, intent(in) :: i
+    end function interfaced_function
+    end interface
+    interface minterface
+    module procedure minterface_i,minterface_r
+    end interface minterface
+end module mmod"#
+    )]
+    fn test_s105_interface_indentation(num_indents: i8, fixed_snippet: &str) -> Result<()> {
+        let snippet = r#"
+module mmod
+interface
+module function interfaced_function(i) result(x)
+integer, intent(in) :: i
+end function interfaced_function
+end interface
+interface minterface
+module procedure minterface_i,minterface_r
+end interface minterface
+end module mmod"#;
+        let toml_contents = format!(
+            r#"
+            [check.invalid-indentation-multiple]
+            num-indents-for-interface-contents = {}
+            "#,
+            num_indents,
+        );
+
+        verify_s105_fixes(snippet, fixed_snippet, &toml_contents)
+    }
+
+    #[test_case::test_case(
+        3,
+        r#"
+subroutine select_cases
+    integer :: i
+    select case (i)
+    case (1)
+                i = 2
+    case (2)
+                i = 1
+    end select
+    i = 3
+end subroutine select_cases"#
+    )]
+    #[test_case::test_case(
+        0,
+        r#"
+subroutine select_cases
+    integer :: i
+    select case (i)
+    case (1)
+    i = 2
+    case (2)
+    i = 1
+    end select
+    i = 3
+end subroutine select_cases"#
+    )]
+    fn test_s105_select_indentation(num_indents: i8, fixed_snippet: &str) -> Result<()> {
+        let snippet = r#"
+subroutine select_cases
+integer :: i
+select case (i)
+case (1)
+i = 2
+case (2)
+i = 1
+end select
+i = 3
+end subroutine select_cases"#;
+        let toml_contents = format!(
+            r#"
+            [check.invalid-indentation-multiple]
+            num-indents-for-select-contents = {}
+            "#,
+            num_indents,
+        );
+
+        verify_s105_fixes(snippet, fixed_snippet, &toml_contents)
+    }
+
+    #[test_case::test_case(
+        4,
+        r#"
+function do_construct
+    integer :: i, j, x
+    do i = 1, 10
+                    do j = i, 10
+                                    x = i * j
+                    end do
+    end do
+    named_do: do i = 1, 10
+                    print *, i
+    end do
+end function do_construct"#
+    )]
+    #[test_case::test_case(
+        0,
+        r#"
+function do_construct
+    integer :: i, j, x
+    do i = 1, 10
+    do j = i, 10
+    x = i * j
+    end do
+    end do
+    named_do: do i = 1, 10
+    print *, i
+    end do
+end function do_construct"#
+    )]
+    fn test_s105_do_indentation(num_indents: i8, fixed_snippet: &str) -> Result<()> {
+        let snippet = r#"
+function do_construct
+integer :: i, j, x
+do i = 1, 10
+do j = i, 10
+x = i * j
+end do
+end do
+named_do: do i = 1, 10
+print *, i
+end do
+end function do_construct"#;
+        let toml_contents = format!(
+            r#"
+            [check.invalid-indentation-multiple]
+            num-indents-for-do-contents = {}
+            "#,
+            num_indents,
+        );
+
+        verify_s105_fixes(snippet, fixed_snippet, &toml_contents)
+    }
+
+    #[test_case::test_case(
+        2,
+        r#"
+subroutine associates
+    integer :: i
+    associate(x => i)
+            print *, x
+    end associate
+    named_associate: associate(x => i)
+            print *, x
+    end associate named_associate
+end subroutine associates"#
+    )]
+    #[test_case::test_case(
+        0,
+        r#"
+subroutine associates
+    integer :: i
+    associate(x => i)
+    print *, x
+    end associate
+    named_associate: associate(x => i)
+    print *, x
+    end associate named_associate
+end subroutine associates"#
+    )]
+    fn test_s105_associate_indentation(num_indents: i8, fixed_snippet: &str) -> Result<()> {
+        let snippet = r#"
+subroutine associates
+integer :: i
+associate(x => i)
+print *, x
+end associate
+named_associate: associate(x => i)
+print *, x
+end associate named_associate
+end subroutine associates"#;
+        let toml_contents = format!(
+            r#"
+            [check.invalid-indentation-multiple]
+            num-indents-for-associate-contents = {}
+            "#,
+            num_indents,
+        );
+
+        verify_s105_fixes(snippet, fixed_snippet, &toml_contents)
+    }
+
+    #[test_case::test_case(
+        2,
+        r#"
+function wrapped_function( &
+        i &
+)
+    integer, intent(in) :: i
+    print *, x
+    i = i + 1 &
+            + 2 &
+            + 3
+end function wrapped_function"#
+    )]
+    #[test_case::test_case(
+        0,
+        r#"
+function wrapped_function( &
+i &
+)
+    integer, intent(in) :: i
+    print *, x
+    i = i + 1 &
+    + 2 &
+    + 3
+end function wrapped_function"#
+    )]
+    fn test_s105_line_continuation_indentation(num_indents: i8, fixed_snippet: &str) -> Result<()> {
+        let snippet = r#"
+function wrapped_function( &
+i &
+)
+integer, intent(in) :: i
+print *, x
+i = i + 1 &
++ 2 &
++ 3
+end function wrapped_function"#;
+        let toml_contents = format!(
+            r#"
+            [check.invalid-indentation-multiple]
+            num-indents-for-line-continuation = {}
             "#,
             num_indents,
         );
