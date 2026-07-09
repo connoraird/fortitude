@@ -22,7 +22,6 @@ use crate::Diagnostic;
 /// * Replace tabs with spaces for a consistent experience across terminals
 /// * Replace zero-width whitespaces
 /// * Print a simpler diff if only a single line has changed
-/// * Compute the diff from the `Edit` because diff calculation is expensive.
 pub(super) struct Diff<'a> {
     fix: &'a Fix,
     diagnostic_source: &'a SourceFile,
@@ -43,12 +42,39 @@ impl<'a> Diff<'a> {
     }
 }
 
+// Get slices slightly larger than the diff groups, helps to
+// minimise changes to the existing diffs
+const DIFF_CONTEXT_WINDOW: usize = 4;
+
 impl std::fmt::Display for Diff<'_> {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         let source_code = self.diagnostic_source.to_source_code();
         let source_text = source_code.text();
 
-        let range = TextRange::new(TextSize::ZERO, source_text.text_len());
+        // Take a slice around the edits to be applied
+        let (range, line_offset) = if let Some(first) = self.fix.edits().first()
+            && let Some(last) = self.fix.edits().last()
+        {
+            let start_line = source_code
+                .line_index(first.start())
+                .saturating_sub(DIFF_CONTEXT_WINDOW);
+            let last_source_line = source_code.line_index(source_text.text_len());
+            let end_line = source_code
+                .line_index(last.end())
+                .saturating_add(DIFF_CONTEXT_WINDOW)
+                .min(last_source_line);
+
+            (
+                TextRange::new(
+                    source_code.line_start(start_line),
+                    source_code.line_end(end_line),
+                ),
+                start_line.to_zero_indexed(),
+            )
+        } else {
+            (TextRange::new(TextSize::ZERO, source_text.text_len()), 0)
+        };
+
         let input = source_code.slice(range);
 
         let mut output = String::with_capacity(input.len());
@@ -75,7 +101,9 @@ impl std::fmt::Display for Diff<'_> {
             // Find the new line number with the largest number of digits to align all of the line
             // number separators.
             let last_op = grouped_ops.last().and_then(|group| group.last());
-            let largest_new = last_op.map(|op| op.new_range().end).unwrap_or_default();
+            let largest_new = last_op
+                .map(|op| op.new_range().end + line_offset)
+                .unwrap_or_default();
 
             let digit_with = OneIndexed::new(largest_new).unwrap_or_default().digits();
 
@@ -107,7 +135,9 @@ impl std::fmt::Display for Diff<'_> {
                         };
 
                         let line = Line {
-                            index: index.map(OneIndexed::from_zero_indexed),
+                            index: index.map(|i| {
+                                OneIndexed::from_zero_indexed(i).saturating_add(line_offset)
+                            }),
                             width: digit_with,
                         };
 

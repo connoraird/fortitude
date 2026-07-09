@@ -59,8 +59,6 @@ help: Replace double quotes with single quotes
 12 +             & World!'
 13 +   print *, 'Hello, &
 14 |             & "World"!'
-15 |   print *, "Hello, &
-16 |             & ""World""!"
 
 S241 String uses double quotes but single quotes preferred
   --> ./resources/test/fixtures/style/S241.f90:15:12
