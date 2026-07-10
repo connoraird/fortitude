@@ -358,16 +358,31 @@ impl AstRule for IncorrectSpaceBetweenBrackets {
 /// - `check.invalid-indentation-multiple.num-indents-for-line-continuation`
 /// - `check.invalid-indentation-multiple.num-indents-for-subroutine-contents`
 #[derive(ViolationMetadata)]
-pub(crate) struct InvalidIndentationMultiple;
+pub(crate) struct InvalidIndentationMultiple {
+    expected_indent: usize,
+    semicolon_found: bool,
+}
 
 impl AlwaysFixableViolation for InvalidIndentationMultiple {
     #[derive_message_formats]
     fn message(&self) -> String {
-        "Invalid indentation".to_string()
+        if self.semicolon_found {
+            "Incorrect indentation and semicolon found".to_string()
+        } else {
+            "Incorrect indentation".to_string()
+        }
     }
 
     fn fix_title(&self) -> String {
-        "Replace with correct spaces".to_string()
+        if self.semicolon_found {
+            "Remove semicolons and indent correctly".to_string()
+        } else {
+            format!(
+                "Replace with the correct number of spaces, {}",
+                self.expected_indent
+            )
+            .to_string()
+        }
     }
 }
 
@@ -576,7 +591,7 @@ pub(crate) fn check_incorrect_indent(context: &CheckContext, root: &Node) -> Vec
             // Include previous semicolon if present
             line_segment_start = if (is_first_segment && line.starts_with(';')) || !is_first_segment
             {
-                line_segment_start - TextSize::try_from(1usize).unwrap()
+                line_segment_start - TextSize::new(1)
             } else {
                 line_segment_start
             };
@@ -606,6 +621,8 @@ pub(crate) fn check_incorrect_indent(context: &CheckContext, root: &Node) -> Vec
         }
 
         if !edit_string.is_empty() {
+            let expected_indent = edit_string.chars().take_while(|c| *c == ' ').count();
+
             let visual_end = if !line_contains_semicolon {
                 line_segment_start + TextSize::try_from(std::cmp::max(line_indent, 1)).unwrap()
             } else {
@@ -613,14 +630,15 @@ pub(crate) fn check_incorrect_indent(context: &CheckContext, root: &Node) -> Vec
             };
 
             let range = TextRange::new(line.start(), visual_end);
-            let fix = Fix::safe_edit(Edit::range_replacement(
-                edit_string,
-                TextRange::new(line.start(), line.end()),
-            ));
+            let fix = Fix::safe_edit(Edit::range_replacement(edit_string, line.range()));
 
-            if let Some(diagnostic) =
-                context.create_diagnostic_if_enabled(InvalidIndentationMultiple, range)
-            {
+            if let Some(diagnostic) = context.create_diagnostic_if_enabled(
+                InvalidIndentationMultiple {
+                    expected_indent,
+                    semicolon_found: line_contains_semicolon,
+                },
+                range,
+            ) {
                 violations.push(diagnostic.with_fix(fix));
             } else if is_preproc_violation {
                 if let Some(diagnostic) =
