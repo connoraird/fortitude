@@ -363,8 +363,7 @@ File selection:
           Only run on files that differ between the files in the working directory of a git repository and `COMMIT`. `COMMIT` can be most things that look like a commit, for example `main`, `0f3abc`, `HEAD~`
 
 Per-Rule Options:
-      --line-length <LINE_LENGTH>    Set the maximum allowable line length
-      --indent-width <INDENT_WIDTH>  Set size of a single indent
+      --line-length <LINE_LENGTH>  Set the maximum allowable line length
 
 Miscellaneous:
       --stdin-filename <STDIN_FILENAME>
