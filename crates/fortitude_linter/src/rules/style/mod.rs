@@ -49,7 +49,7 @@ mod tests {
     #[test_case(Rule::IncorrectSpaceBeforeComment, Path::new("S102.f90"))]
     #[test_case(Rule::IncorrectSpaceAroundDoubleColon, Path::new("S103.f90"))]
     #[test_case(Rule::IncorrectSpaceBetweenBrackets, Path::new("S104.f90"))]
-    #[test_case(Rule::InvalidIndentationMultiple, Path::new("S105.f90"))]
+    #[test_case(Rule::IncorrectIndentation, Path::new("S105.f90"))]
     #[test_case(Rule::InvalidPreprocIndentation, Path::new("S106.f90"))]
     #[test_case(Rule::SuperfluousImplicitNone, Path::new("S201.f90"))]
     #[test_case(Rule::MultipleModules, Path::new("S211.f90"))]
@@ -127,8 +127,8 @@ mod tests {
     }
 
     #[test]
-    fn invalid_indentation_multiple_width_2() -> Result<()> {
-        let rule_code = Rule::InvalidIndentationMultiple;
+    fn incorrect_indentation_width_2() -> Result<()> {
+        let rule_code = Rule::IncorrectIndentation;
         let path = Path::new("S105.f90");
         let snapshot = format!(
             "{}_{}_indent_width_2",
@@ -148,7 +148,7 @@ mod tests {
 
     #[test]
     fn invalid_indentation_non_default_settings() -> Result<()> {
-        let rule_code = Rule::InvalidIndentationMultiple;
+        let rule_code = Rule::IncorrectIndentation;
         let path = Path::new("S105.f90");
         let snapshot = format!(
             "{}_{}_non_default_settings",
@@ -156,18 +156,18 @@ mod tests {
             path.to_string_lossy()
         );
 
-        let mut invalid_indentation_multiple_settings =
-            whitespace::settings::InvalidIndentationMultipleSettings {
+        let mut incorrect_indentation_settings =
+            whitespace::settings::IncorrectIndentationSettings {
                 num_indents_for_associate_contents: 0,
                 num_indents_for_if_contents: 0,
                 num_indents_for_subroutine_contents: 2,
                 ..Default::default()
             };
 
-        invalid_indentation_multiple_settings.populate_construct_to_indent_map();
+        incorrect_indentation_settings.populate_construct_to_indent_map();
 
         let settings = CheckSettings {
-            invalid_indentation_multiple: invalid_indentation_multiple_settings,
+            incorrect_indentation: incorrect_indentation_settings,
             ..CheckSettings::for_rule(rule_code)
         };
         let diagnostics = test_path(Path::new("style").join(path).as_path(), &settings)?;

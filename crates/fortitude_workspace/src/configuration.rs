@@ -1,6 +1,6 @@
 use crate::options::{
     ComplexityOptions, ExitUnlabelledLoopOptions, InconsistentDimensionOptions,
-    IncorrectKeywordCaseOptions, InvalidIndentationMultipleOptions, InvalidTabOptions,
+    IncorrectIndentationOptions, IncorrectKeywordCaseOptions, InvalidTabOptions,
     KeywordWhitespaceOptions, LineTooLongOptions, Options, PortabilityOptions,
     ShadowedVariableOptions, StringOptions, UseStatementsOptions,
 };
@@ -261,7 +261,7 @@ pub struct Configuration {
     pub line_too_long: Option<LineTooLongOptions>,
     pub use_statements: Option<UseStatementsOptions>,
     pub complexity: Option<ComplexityOptions>,
-    pub invalid_indentation_multiple: Option<InvalidIndentationMultipleOptions>,
+    pub incorrect_indentation: Option<IncorrectIndentationOptions>,
 }
 
 impl Configuration {
@@ -343,7 +343,7 @@ impl Configuration {
             line_too_long: check.line_too_long,
             use_statements: check.use_statements,
             complexity: check.complexity,
-            invalid_indentation_multiple: check.invalid_indentation_multiple,
+            incorrect_indentation: check.incorrect_indentation,
         }
     }
 
@@ -439,9 +439,9 @@ impl Configuration {
                     .complexity
                     .map(ComplexityOptions::into_settings)
                     .unwrap_or_default(),
-                invalid_indentation_multiple: self
-                    .invalid_indentation_multiple
-                    .map(InvalidIndentationMultipleOptions::into_settings)
+                incorrect_indentation: self
+                    .incorrect_indentation
+                    .map(IncorrectIndentationOptions::into_settings)
                     .unwrap_or_default(),
             },
             file_resolver: FileResolverSettings {
@@ -524,9 +524,7 @@ impl Configuration {
             line_too_long: self.line_too_long.or(config.line_too_long),
             use_statements: self.use_statements.or(config.use_statements),
             complexity: self.complexity.or(config.complexity),
-            invalid_indentation_multiple: self
-                .invalid_indentation_multiple
-                .or(config.invalid_indentation_multiple),
+            incorrect_indentation: self.incorrect_indentation.or(config.incorrect_indentation),
         }
     }
 }

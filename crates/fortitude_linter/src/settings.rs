@@ -86,7 +86,7 @@ pub struct CheckSettings {
     pub line_too_long: line_length::settings::Settings,
     pub use_statements: use_statements::settings::Settings,
     pub complexity: complexity::settings::Settings,
-    pub invalid_indentation_multiple: whitespace::settings::InvalidIndentationMultipleSettings,
+    pub incorrect_indentation: whitespace::settings::IncorrectIndentationSettings,
 }
 
 impl Default for CheckSettings {
@@ -125,8 +125,7 @@ impl CheckSettings {
             line_too_long: line_length::settings::Settings::default(),
             use_statements: use_statements::settings::Settings::default(),
             complexity: complexity::settings::Settings::default(),
-            invalid_indentation_multiple:
-                whitespace::settings::InvalidIndentationMultipleSettings::default(),
+            incorrect_indentation: whitespace::settings::IncorrectIndentationSettings::default(),
         }
     }
 

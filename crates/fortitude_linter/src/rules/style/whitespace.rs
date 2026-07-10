@@ -344,26 +344,26 @@ impl AstRule for IncorrectSpaceBetweenBrackets {
 ///
 /// ## Options
 /// - `check.indent-width`
-/// - `check.invalid-indentation-multiple.num-indents-for-associate-contents`
-/// - `check.invalid-indentation-multiple.num-indents-for-block-contents`
-/// - `check.invalid-indentation-multiple.num-indents-for-derived-type-contents`
-/// - `check.invalid-indentation-multiple.num-indents-for-do-contents`
-/// - `check.invalid-indentation-multiple.num-indents-for-function-contents`
-/// - `check.invalid-indentation-multiple.num-indents-for-if-contents`
-/// - `check.invalid-indentation-multiple.num-indents-for-interface-contents`
-/// - `check.invalid-indentation-multiple.num-indents-for-module-contents`
-/// - `check.invalid-indentation-multiple.num-indents-for-program-contents`
-/// - `check.invalid-indentation-multiple.num-indents-for-select-contents`
-/// - `check.invalid-indentation-multiple.num-indents-for-submodule-contents`
-/// - `check.invalid-indentation-multiple.num-indents-for-line-continuation`
-/// - `check.invalid-indentation-multiple.num-indents-for-subroutine-contents`
+/// - `check.incorrect-indentation.num-indents-for-associate-contents`
+/// - `check.incorrect-indentation.num-indents-for-block-contents`
+/// - `check.incorrect-indentation.num-indents-for-derived-type-contents`
+/// - `check.incorrect-indentation.num-indents-for-do-contents`
+/// - `check.incorrect-indentation.num-indents-for-function-contents`
+/// - `check.incorrect-indentation.num-indents-for-if-contents`
+/// - `check.incorrect-indentation.num-indents-for-interface-contents`
+/// - `check.incorrect-indentation.num-indents-for-module-contents`
+/// - `check.incorrect-indentation.num-indents-for-program-contents`
+/// - `check.incorrect-indentation.num-indents-for-select-contents`
+/// - `check.incorrect-indentation.num-indents-for-submodule-contents`
+/// - `check.incorrect-indentation.num-indents-for-line-continuation`
+/// - `check.incorrect-indentation.num-indents-for-subroutine-contents`
 #[derive(ViolationMetadata)]
-pub(crate) struct InvalidIndentationMultiple {
+pub(crate) struct IncorrectIndentation {
     expected_indent: usize,
     semicolon_found: bool,
 }
 
-impl AlwaysFixableViolation for InvalidIndentationMultiple {
+impl AlwaysFixableViolation for IncorrectIndentation {
     #[derive_message_formats]
     fn message(&self) -> String {
         if self.semicolon_found {
@@ -481,7 +481,7 @@ pub(crate) fn check_incorrect_indent(context: &CheckContext, root: &Node) -> Vec
 
     let constructs_to_indent_map = &context
         .settings()
-        .invalid_indentation_multiple
+        .incorrect_indentation
         .construct_to_indent_map;
 
     // Array to track both the number of scopes we are inside and their respective indents
@@ -500,7 +500,7 @@ pub(crate) fn check_incorrect_indent(context: &CheckContext, root: &Node) -> Vec
         // Booleans to determine the rule that has been broken
         let mut is_preproc_violation = false;
         // boolean to track if a line should be updated based on the users selected rules
-        let mut edit_is_activated = context.is_rule_enabled(Rule::InvalidIndentationMultiple);
+        let mut edit_is_activated = context.is_rule_enabled(Rule::IncorrectIndentation);
 
         // Loop through line until all semicolons outside quoted strings have been accounted for
         let mut line_segment_start = line.start();
@@ -633,7 +633,7 @@ pub(crate) fn check_incorrect_indent(context: &CheckContext, root: &Node) -> Vec
             let fix = Fix::safe_edit(Edit::range_replacement(edit_string, line.range()));
 
             if let Some(diagnostic) = context.create_diagnostic_if_enabled(
-                InvalidIndentationMultiple {
+                IncorrectIndentation {
                     expected_indent,
                     semicolon_found: line_contains_semicolon,
                 },
@@ -659,7 +659,7 @@ pub mod settings {
     use std::{collections::HashMap, fmt::Display};
 
     #[derive(Debug, Clone, CacheKey)]
-    pub struct InvalidIndentationMultipleSettings {
+    pub struct IncorrectIndentationSettings {
         pub construct_to_indent_map: HashMap<String, usize>,
         pub num_indents_for_program_contents: usize,
         pub num_indents_for_module_contents: usize,
@@ -676,7 +676,7 @@ pub mod settings {
         pub num_indents_for_line_continuation: usize,
     }
 
-    impl Default for InvalidIndentationMultipleSettings {
+    impl Default for IncorrectIndentationSettings {
         fn default() -> Self {
             let construct_to_indent_map: HashMap<String, usize> = HashMap::new();
             let mut settings = Self {
@@ -699,7 +699,7 @@ pub mod settings {
         }
     }
 
-    impl InvalidIndentationMultipleSettings {
+    impl IncorrectIndentationSettings {
         pub fn populate_construct_to_indent_map(&mut self) -> Self {
             self.construct_to_indent_map.insert(
                 "program_statement".to_string(),
@@ -772,11 +772,11 @@ pub mod settings {
         }
     }
 
-    impl Display for InvalidIndentationMultipleSettings {
+    impl Display for IncorrectIndentationSettings {
         fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
             display_settings! {
                 formatter = f,
-                namespace = "check.invalid-indentation-multiple",
+                namespace = "check.incorrect-indentation",
                 fields = [
                     self.num_indents_for_program_contents,
                     self.num_indents_for_module_contents,
@@ -815,7 +815,7 @@ mod tests {
         let snippet = "!> My program\nprogram test\nimplicit none\nend program test";
         let toml_contents = format!(
             r#"
-            [check.invalid-indentation-multiple]
+            [check.incorrect-indentation]
             num-indents-for-program-contents = {}
             "#,
             num_indents,
@@ -836,7 +836,7 @@ mod tests {
         let snippet = "!> My module\nmodule test\nimplicit none\ncontains\nend module test";
         let toml_contents = format!(
             r#"
-            [check.invalid-indentation-multiple]
+            [check.incorrect-indentation]
             num-indents-for-module-contents = {}
             "#,
             num_indents,
@@ -858,7 +858,7 @@ mod tests {
             "!> My submodule\nsubmodule (mmod) test\nimplicit none\ncontains\nend submodule test";
         let toml_contents = format!(
             r#"
-            [check.invalid-indentation-multiple]
+            [check.incorrect-indentation]
             num-indents-for-submodule-contents = {}
             "#,
             num_indents,
@@ -879,7 +879,7 @@ mod tests {
         let snippet = "!> My subroutine\nsubroutine test\nimplicit none\nend subroutine test";
         let toml_contents = format!(
             r#"
-            [check.invalid-indentation-multiple]
+            [check.incorrect-indentation]
             num-indents-for-subroutine-contents = {}
             "#,
             num_indents,
@@ -951,7 +951,7 @@ end submodule msubmodule"#
     ) -> Result<()> {
         let toml_contents = format!(
             r#"
-            [check.invalid-indentation-multiple]
+            [check.incorrect-indentation]
             num-indents-for-function-contents = {}
             "#,
             num_indents,
@@ -996,7 +996,7 @@ contains
 end module mmod"#;
         let toml_contents = format!(
             r#"
-            [check.invalid-indentation-multiple]
+            [check.incorrect-indentation]
             num-indents-for-derived-type-contents = {}
             "#,
             num_indents,
@@ -1050,7 +1050,7 @@ end block
 end program mprog"#;
         let toml_contents = format!(
             r#"
-            [check.invalid-indentation-multiple]
+            [check.incorrect-indentation]
             num-indents-for-block-contents = {}
             "#,
             num_indents,
@@ -1120,7 +1120,7 @@ end if
 end subroutine msub"#;
         let toml_contents = format!(
             r#"
-            [check.invalid-indentation-multiple]
+            [check.incorrect-indentation]
             num-indents-for-if-contents = {}
             "#,
             num_indents,
@@ -1171,7 +1171,7 @@ end interface minterface
 end module mmod"#;
         let toml_contents = format!(
             r#"
-            [check.invalid-indentation-multiple]
+            [check.incorrect-indentation]
             num-indents-for-interface-contents = {}
             "#,
             num_indents,
@@ -1222,7 +1222,7 @@ i = 3
 end subroutine select_cases"#;
         let toml_contents = format!(
             r#"
-            [check.invalid-indentation-multiple]
+            [check.incorrect-indentation]
             num-indents-for-select-contents = {}
             "#,
             num_indents,
@@ -1276,7 +1276,7 @@ end do
 end function do_construct"#;
         let toml_contents = format!(
             r#"
-            [check.invalid-indentation-multiple]
+            [check.incorrect-indentation]
             num-indents-for-do-contents = {}
             "#,
             num_indents,
@@ -1324,7 +1324,7 @@ end associate named_associate
 end subroutine associates"#;
         let toml_contents = format!(
             r#"
-            [check.invalid-indentation-multiple]
+            [check.incorrect-indentation]
             num-indents-for-associate-contents = {}
             "#,
             num_indents,
@@ -1372,7 +1372,7 @@ i = i + 1 &
 end function wrapped_function"#;
         let toml_contents = format!(
             r#"
-            [check.invalid-indentation-multiple]
+            [check.incorrect-indentation]
             num-indents-for-line-continuation = {}
             "#,
             num_indents,

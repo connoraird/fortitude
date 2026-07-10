@@ -435,9 +435,9 @@ pub struct CheckOptions {
     #[option_group]
     pub complexity: Option<ComplexityOptions>,
 
-    /// Options for `invalid-indentation-multiple` rule
+    /// Options for `incorrect-indentation` rule
     #[option_group]
-    pub invalid_indentation_multiple: Option<InvalidIndentationMultipleOptions>,
+    pub incorrect_indentation: Option<IncorrectIndentationOptions>,
 }
 
 /// Options for the `exit-or-cycle-in-unlabelled-loops` rule
@@ -536,7 +536,7 @@ impl KeywordWhitespaceOptions {
     Clone, Debug, PartialEq, Eq, Default, OptionsMetadata, CombineOptions, Serialize, Deserialize,
 )]
 #[serde(deny_unknown_fields, rename_all = "kebab-case")]
-pub struct InvalidIndentationMultipleOptions {
+pub struct IncorrectIndentationOptions {
     /// The number of full indents to use for the contents of a program
     #[option(
         default = "1",
@@ -642,10 +642,9 @@ pub struct InvalidIndentationMultipleOptions {
     pub num_indents_for_line_continuation: Option<usize>,
 }
 
-impl InvalidIndentationMultipleOptions {
-    pub fn into_settings(self) -> whitespace::settings::InvalidIndentationMultipleSettings {
-        let mut settings_to_return =
-            whitespace::settings::InvalidIndentationMultipleSettings::default();
+impl IncorrectIndentationOptions {
+    pub fn into_settings(self) -> whitespace::settings::IncorrectIndentationSettings {
+        let mut settings_to_return = whitespace::settings::IncorrectIndentationSettings::default();
 
         settings_to_return.num_indents_for_program_contents = self
             .num_indents_for_program_contents
