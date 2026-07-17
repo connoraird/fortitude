@@ -18,29 +18,29 @@ authors:
     orcid: 0000-0003-3092-1858
     equal-contrib: true
     affiliation: 1
-  - name: Ian McInerney
-    orcid: 0000-0003-2616-9771
-    affiliation: 2
   - name: Connor Aird
     orcid: 0009-0001-7879-3472  
-    affiliation: 3
-  - name: Cyril Gandon
-    orcid: 0009-0006-9705-8867
-    affiliation: 4
+    affiliation: 2
   - name: Ava Dean
     orcid: 0000-0002-2204-4456
     affiliation: 1
+  - name: Cyril Gandon
+    orcid: 0009-0006-9705-8867
+    affiliation: 3
+  - name: Ian McInerney
+    orcid: 0000-0003-2616-9771
+    affiliation: 4
   - name: Violet Sherratt
     orcid: 0009-0009-0066-8338
     affiliation: 5
 affiliations:
   - name: University of York, United Kingdom
     index: 1
-  - name: Imperial College London, United Kingdom
-    index: 2
   - name: University College London, United Kingdom
-    index: 3
+    index: 2
   - name: INRAE (French National Research Institute for Agriculture, Food and Environment), France
+    index: 3
+  - name: Imperial College London, United Kingdom
     index: 4
   - name: Met Office, United Kingdom
     index: 5
