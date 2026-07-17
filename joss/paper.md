@@ -27,6 +27,12 @@ authors:
   - name: Cyril Gandon
     orcid: 0009-0006-9705-8867
     affiliation: 4
+  - name: Ava Dean
+    orcid: 0000-0002-2204-4456
+    affiliation: 1
+  - name: Violet Sherratt
+    orcid: 0009-0009-0066-8338
+    affiliation: 5
 affiliations:
   - name: University of York, United Kingdom
     index: 1
@@ -36,6 +42,8 @@ affiliations:
     index: 3
   - name: INRAE (French National Research Institute for Agriculture, Food and Environment), France
     index: 4
+  - name: Met Office, United Kingdom
+    index: 5
 date: 21 April 2026
 bibliography: paper.bib
 
