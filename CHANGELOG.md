@@ -1,5 +1,27 @@
 # Changelog
 
+## 0.9.1
+
+Released on 2026-07-21.
+
+### Changes
+
+- Adds JOSS paper ([#622](https://github.com/PlasmaFAIR/fortitude/pull/622))
+- Documentation fixes ([#638](https://github.com/PlasmaFAIR/fortitude/pull/638), [#655](https://github.com/PlasmaFAIR/fortitude/pull/655))
+- Bump ruff dependencies to 0.15, various internal upgrades ([#640](https://github.com/PlasmaFAIR/fortitude/pull/640), [#643](https://github.com/PlasmaFAIR/fortitude/pull/643), [#644](https://github.com/PlasmaFAIR/fortitude/pull/644))
+
+### Contributors
+
+- [@LiamPattinson](https://github.com/LiamPattinson)
+- [@ZedThree](https://github.com/ZedThree)
+- [@imciner2](https://github.com/imciner2)
+- [@connoraird](https://github.com/connoraird)
+- [@danielhollas](https://github.com/danielhollas)
+- [@fjebaker](https://github.com/fjebaker)
+- [@mansurjisan](https://github.com/mansurjisan)
+- [@danielskatz](https://github.com/danielskatz)
+- [@matthewrmshin](https://github.com/matthewrmshin)
+
 ## 0.9.0
 
 Released on 2026-05-13.
