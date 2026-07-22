@@ -1,5 +1,19 @@
 # Changelog
 
+## 0.9.2
+
+Released on 2026-07-22. Contains only minor updates to the JOSS submission and a correction to the authors list.
+
+### Changes
+
+- Minor edits to JOSS submission and correcting authorship ([#622](https://github.com/PlasmaFAIR/fortitude/pull/622))
+
+### Contributors
+
+- [@LiamPattinson](https://github.com/LiamPattinson)
+- [@vsherratt](https://github.com/vsherratt)
+- [@VincentVanlaer](https://gjithub.com/VincentVanlaer)
+
 ## 0.9.1
 
 Released on 2026-07-21.
