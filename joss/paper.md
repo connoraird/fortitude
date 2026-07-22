@@ -33,6 +33,9 @@ authors:
   - name: Violet Sherratt
     orcid: 0009-0009-0066-8338
     affiliation: 5
+  - name: Vincent Vanlaer
+    orcid: 0000-0003-4923-6199
+    affiliation: 6
 affiliations:
   - name: University of York, United Kingdom
     index: 1
@@ -44,6 +47,8 @@ affiliations:
     index: 4
   - name: Met Office, United Kingdom
     index: 5
+  - name: KU Leuven, Belgium
+    index: 6
 date: 21 April 2026
 bibliography: paper.bib
 
